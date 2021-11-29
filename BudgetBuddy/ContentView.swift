@@ -11,22 +11,30 @@ struct ContentView: View {
     @StateObject var items = Expenses()
     @ObservedObject var categories: Categories
     @State private var add = false
+    @State private var amount = 0.0
 
     var body: some View {
         NavigationView {
             List {
                 ForEach(items.expenses, id: \.id) {
                     item in
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text(item.name)
-                                .font(.headline)
-                            Text(item.category)
+                    VStack {
+                        HStack {
+                            VStack(alignment: .leading) {
+                                Text(item.name)
+                                    .font(.headline)
+                                Text(item.category)
+                            }
+                            
+                            Spacer()
+                            
+                            Text(String(item.amount))
                         }
                         
-                        Spacer()
+                        Text("Edit amount")
                         
-                        Text(String(item.amount))
+                        TextField(String(item.amount), value: $amount, format: .currency(code: "USD") )
+                            .background(.gray)
                     }
                 }
                 .onDelete(perform: deleteItem)
@@ -47,6 +55,17 @@ struct ContentView: View {
     }
     
     func deleteItem(at offsets: IndexSet) {
+        
+    
+        print(offsets[offsets.startIndex])
+        let deletedIndex = offsets[offsets.startIndex]
+        let categoryName = items.expenses[deletedIndex].category
+        print(categoryName)
+        for i in 0..<categories.categories.count {
+            if categoryName == categories.categories[i].name {
+                categories.categories[i].paid -= items.expenses[deletedIndex].amount
+            }
+        }
         items.expenses.remove(atOffsets: offsets)
     }}
 
