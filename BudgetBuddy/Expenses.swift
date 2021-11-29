@@ -8,15 +8,28 @@
 import Foundation
 
 class Expenses: ObservableObject {
-    @Published var expenses = [Expense]()
+    @Published var expenses = [Expense]() {
+        didSet {
+            if let encoded = try? JSONEncoder().encode(expenses) {
+                UserDefaults.standard.set(encoded, forKey: "Expenses")
+            }
+        }
+    }
     
     init() {
-        let expense1 = Expense(name: "Tacos", amount: 12.99, category: "Eating out")
-        let expense2 = Expense(name: "Whole Foods", amount: 86.54, category: "Groceries")
-        let expense3 = Expense(name: "Moto insurance", amount: 120.23, category: "Vehicles")
         
-        expenses.append(expense1)
-        expenses.append(expense2)
-        expenses.append(expense3)
+        if let savedItems = UserDefaults.standard.data(forKey: "Expenses") {
+            // If we can read it, attempt to decode it as an array of ExpenseItem
+            if let decodedItems = try? JSONDecoder().decode([Expense].self, from: savedItems) {
+                // we use ".self" here because swift wants to know what we mean.
+                // are we making a copy of the array?
+                // are we trying to make a new one?
+                // no, we're refering to the array type itself
+                expenses = decodedItems
+                return
+            }
+        }
+        // else
+        expenses = []
     }
 }

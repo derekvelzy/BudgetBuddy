@@ -12,9 +12,11 @@ struct AddView: View {
     
     @Environment(\.dismiss) var dismiss
     @State private var name = ""
-    @State private var category = "food"
+    @State private var category = Categories().categories[0]
     @State private var amount = 0.0
-    var categories = ["food", "groceries", "miscellaneous"]
+    @State private var alert = false
+    @State private var alertMessage = ""
+    @ObservedObject var categories: Categories
     
     var body: some View {
         NavigationView {
@@ -22,8 +24,9 @@ struct AddView: View {
                 TextField("Name", text: $name)
                 
                 Picker("Category", selection: $category) {
-                    ForEach(categories, id: \.self) {
-                        Text($0)
+                    ForEach(categories.categories) {
+                        cat in
+                        Text(cat.name).tag(cat)
                     }
                 }
                 
@@ -35,17 +38,38 @@ struct AddView: View {
             .toolbar {
                 //save
                 Button("Save") {
-                    let expenseItem = Expense(name: name, amount: amount, category: category)
-                    items.expenses.append(expenseItem)
-                    dismiss()
+                    saveItem()
+                }
+                .alert(alertMessage, isPresented: $alert) {
+                    Button("OK") {}
                 }
             }
+        }
+    }
+    
+    func saveItem() {
+        if name == "" {
+            alertMessage = "Please enter expense name"
+            alert.toggle()
+        } else if amount == 0.0 {
+            alertMessage = "Please enter valid amount"
+            alert.toggle()
+        } else {
+            let expenseItem = Expense(name: name, amount: amount, category: category.name)
+            // update amount paid for each category
+            for i in 0..<categories.categories.count {
+                if category.id == categories.categories[i].id {
+                    categories.categories[i].paid += amount
+                }
+            }
+            items.expenses.append(expenseItem)
+            dismiss()
         }
     }
 }
 
 struct AddView_Preview: PreviewProvider {
     static var previews: some View {
-        AddView(items: Expenses())
+        AddView(items: Expenses(), categories: Categories())
     }
 }

@@ -2,13 +2,14 @@
 //  ContentView.swift
 //  BudgetBuddy
 //
-//  Created by Derek Velzy on 11/26/21.
+//  Created by Derek Velzy on 11/28/21.
 //
 
 import SwiftUI
 
 struct ContentView: View {
     @StateObject var items = Expenses()
+    @ObservedObject var categories: Categories
     @State private var add = false
 
     var body: some View {
@@ -32,12 +33,14 @@ struct ContentView: View {
             }
             .navigationTitle("Budget")
             .toolbar {
-                Button("Adds") {
+                Button{
                     add.toggle()
+                } label: {
+                    Image(systemName: "plus")
                 }
             }
             .sheet(isPresented: $add) {
-                AddView(items: items)
+                AddView(items: items, categories: categories)
             }
 
         }
@@ -45,11 +48,10 @@ struct ContentView: View {
     
     func deleteItem(at offsets: IndexSet) {
         items.expenses.remove(atOffsets: offsets)
-    }
-}
+    }}
 
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-    }
-}
+//struct ContentView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        HomeView()
+//    }
+//}
